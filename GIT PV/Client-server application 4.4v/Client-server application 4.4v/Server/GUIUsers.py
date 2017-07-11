@@ -49,7 +49,12 @@ class But_print:
         cur = con.cursor()
         cur.execute("UPDATE  Users SET ConConection = '" + str(FALSE) + "'"+"WHERE Login ='" + manival2+ "'")
         #-----------------------------------------------------------------------------
-       
+        cur.execute("SELECT Login, Name, Surname,ConConection, Password FROM Users")
+        config.ClientCommand = (manival2, 1)
+        rows = cur.fetchall()
+        self.lbox1.delete(0, END)
+        for row in rows:
+            self.lbox1.insert(END, row)
         #----------------------------------------------------------------------
         con.commit()
         con.close()
@@ -65,7 +70,11 @@ class But_print:
         cur.execute("UPDATE  Users SET ConConection = '" + str(TRUE) + "'" + "WHERE Login ='" + manival2 + "'")
 
         #-----------------------------------------------------------------------------
-       
+        cur.execute("SELECT Login, Name, Surname,ConConection, Password FROM Users")
+        rows = cur.fetchall()
+        self.lbox1.delete(0,END)
+        for row in rows:
+            self.lbox1.insert(END, row)
         #----------------------------------------------------------------------
         con.commit()
         con.close()
