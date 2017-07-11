@@ -25,7 +25,7 @@ BUFSIZ = 1024 # Размер буфера
 Worked = True # Работа сервера
 MAX_COUNT_CLIENTS = 10 # Максимальное количество клиентов
 OnLineClients = dict() # Список подключенных клиентов
-IsCanConnectList = []  # Список пользователей имеющих доступ к системе
+
 NewMessagesList = dict() # Новые сообщения для каждого клиента
 KEYS = None # Ключи для открытого шифрования
 CashCaptImgList = []
@@ -154,8 +154,11 @@ def ReceivingMessages(Client, addr, USERNAME): # Прием данных от к
                     elif Msg[0] == 'Login':
                         Login = Msg[1] # Выделим логин из сообщения
                         Id = UserInBase(UsersCur, Login) # Получение ID пользователя из базы
-   
-                        if Id and not Id in OnLineClients : # Если пользователь зарегистрирован и не подключен
+						canConnection = int(UsersCur.execute("select ConConection from users where id=?", [Id]).fetchone()[0])
+                        if 0 == canConnection:
+                            SendData(Client, "BANNED")
+                            continue
+                        if Id and not Id in OnLineClients and not Login in IsCanConnectList and canConnection != 0: # Если пользователь зарегистрирован и не подключен
                             UserData =  GetRecordsData(UsersDB, UsersCur, 'Users', "Id='" + str(Id) + "'", "*")[0]
                             Md5Pass = hashlib.md5() # Получение хэша пароля
                             Md5Pass.update(Msg[2])
@@ -798,13 +801,13 @@ def CommandInterpreter():
             elif CommandNum == 12: # Exit
                 Worked = False
                 return
-            # elif CommandNum == 13:  # GUIUsers
-                    # adminWindow = GUIUsers.Tk()  # Окно
-                    # adminWindow.geometry('700x450')  # Размер окнаа
-                    # adminWindow.title('Списки пользователей')  # Заголовок окна
-                    # adminWindow.resizable(width=False, height=False)  # Запрет на изменение размеров окна
-                    # obj = GUIUsers.But_print(adminWindow)
-                    # adminWindow.mainloop()
+            elif CommandNum == 13:  # GUIUsers форма
+                    adminWindow = GUIUsers.Tk()  # Окно
+                    adminWindow.geometry('700x450')  # Размер окнаа
+                    adminWindow.title('Списки пользователей')  # Заголовок окна
+                    adminWindow.resizable(width=False, height=False)  # Запрет на изменение размеров окна
+                    obj = GUIUsers.But_print(adminWindow)
+                    adminWindow.mainloop()
         except Exception, e:
             print 'ERROR:', e.args # Соединение было разорвано удаленным узлом
             raw_input("Press ENTER to continue")
@@ -838,7 +841,7 @@ def main():
                 Surname TEXT,
                 Password TEXT,
                 Friends TEXT,
-                ConConection BOOLEAN DEFAULT TRUE,
+              
                 id INTEGER PRIMARY KEY
             )''') # Создание таблицы пользователей, если ее не было
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Messages(
@@ -879,13 +882,12 @@ def main():
 ##        '''
 ##        DelFriendID = UsersCur.fetchall() # Получение данных контакта
 ##        print DelFriendID
-        # формирование списка IsCanConnectList
-        UsersCur.execute("SELECT Login FROM USERS WHERE ConConection=?", [0])
+        # UsersCur.execute("SELECT Login FROM USERS WHERE ConConection=?", [0])
 
-        rows = UsersCur.fetchall()
-        for row in rows:
-            IsCanConnectList.append(row)
-        print IsCanConnectList
+        # rows = UsersCur.fetchall()
+        # for row in rows:
+            # IsCanConnectList.append(row)
+        # print IsCanConnectList
         if UsersCur: #, Messages.Topic, Messages.Read, Messages.File, Messages.Date
             UsersCur.close()
         if UsersDB:
