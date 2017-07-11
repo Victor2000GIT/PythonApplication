@@ -25,7 +25,7 @@ BUFSIZ = 1024 # Размер буфера
 Worked = True # Работа сервера
 MAX_COUNT_CLIENTS = 10 # Максимальное количество клиентов
 OnLineClients = dict() # Список подключенных клиентов
-
+IsCanConnectList = []  # Список пользователей имеющих доступ к системе
 NewMessagesList = dict() # Новые сообщения для каждого клиента
 KEYS = None # Ключи для открытого шифрования
 CashCaptImgList = []
@@ -838,7 +838,7 @@ def main():
                 Surname TEXT,
                 Password TEXT,
                 Friends TEXT,
-              
+                ConConection BOOLEAN DEFAULT TRUE,
                 id INTEGER PRIMARY KEY
             )''') # Создание таблицы пользователей, если ее не было
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Messages(
@@ -879,12 +879,13 @@ def main():
 ##        '''
 ##        DelFriendID = UsersCur.fetchall() # Получение данных контакта
 ##        print DelFriendID
-        # UsersCur.execute("SELECT Login FROM USERS WHERE ConConection=?", [0])
+        # формирование списка IsCanConnectList
+        UsersCur.execute("SELECT Login FROM USERS WHERE ConConection=?", [0])
 
-        # rows = UsersCur.fetchall()
-        # for row in rows:
-            # IsCanConnectList.append(row)
-        # print IsCanConnectList
+        rows = UsersCur.fetchall()
+        for row in rows:
+            IsCanConnectList.append(row)
+        print IsCanConnectList
         if UsersCur: #, Messages.Topic, Messages.Read, Messages.File, Messages.Date
             UsersCur.close()
         if UsersDB:
